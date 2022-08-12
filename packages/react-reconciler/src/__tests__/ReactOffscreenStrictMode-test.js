@@ -13,10 +13,6 @@ describe('ReactOffscreenStrictMode', () => {
     Offscreen = React.unstable_Offscreen;
     ReactNoop = require('react-noop-renderer');
     act = require('jest-react').act;
-
-    const ReactFeatureFlags = require('shared/ReactFeatureFlags');
-    ReactFeatureFlags.enableStrictEffects = __DEV__;
-    ReactFeatureFlags.createRootStrictEffectsByDefault = __DEV__;
   });
 
   function Component({label}) {
@@ -35,8 +31,7 @@ describe('ReactOffscreenStrictMode', () => {
     return <span>label</span>;
   }
 
-  // @gate enableOffscreen
-  // @gate __DEV__
+  // @gate __DEV__ && enableStrictEffects && enableOffscreen
   it('should trigger strict effects when offscreen is visible', () => {
     act(() => {
       ReactNoop.render(
@@ -46,20 +41,27 @@ describe('ReactOffscreenStrictMode', () => {
       );
     });
 
-    expect(log).toEqual([
-      'A: render',
-      'A: render',
-      'A: useLayoutEffect mount',
-      'A: useEffect mount',
-      'A: useLayoutEffect unmount',
-      'A: useEffect unmount',
-      'A: useLayoutEffect mount',
-      'A: useEffect mount',
-    ]);
+    if (__DEV__) {
+      expect(log).toEqual([
+        'A: render',
+        'A: render',
+        'A: useLayoutEffect mount',
+        'A: useEffect mount',
+        'A: useLayoutEffect unmount',
+        'A: useEffect unmount',
+        'A: useLayoutEffect mount',
+        'A: useEffect mount',
+      ]);
+    } else {
+      expect(log).toEqual([
+        'A: render',
+        'A: useLayoutEffect mount',
+        'A: useEffect mount',
+      ]);
+    }
   });
 
-  // @gate enableOffscreen
-  // @gate __DEV__
+  // @gate __DEV__ && enableStrictEffects
   it('should not trigger strict effects when offscreen is hidden', () => {
     act(() => {
       ReactNoop.render(
@@ -69,7 +71,11 @@ describe('ReactOffscreenStrictMode', () => {
       );
     });
 
-    expect(log).toEqual(['A: render', 'A: render']);
+    if (__DEV__) {
+      expect(log).toEqual(['A: render', 'A: render']);
+    } else {
+      expect(log).toEqual(['A: render']);
+    }
 
     log = [];
 
@@ -81,15 +87,23 @@ describe('ReactOffscreenStrictMode', () => {
       );
     });
 
-    expect(log).toEqual([
-      'A: render',
-      'A: render',
-      'A: useLayoutEffect mount',
-      'A: useEffect mount',
-      'A: useLayoutEffect unmount',
-      'A: useEffect unmount',
-      'A: useLayoutEffect mount',
-      'A: useEffect mount',
-    ]);
+    if (__DEV__) {
+      expect(log).toEqual([
+        'A: render',
+        'A: render',
+        'A: useLayoutEffect mount',
+        'A: useEffect mount',
+        'A: useLayoutEffect unmount',
+        'A: useEffect unmount',
+        'A: useLayoutEffect mount',
+        'A: useEffect mount',
+      ]);
+    } else {
+      expect(log).toEqual([
+        'A: render',
+        'A: useLayoutEffect mount',
+        'A: useEffect mount',
+      ]);
+    }
   });
 });
